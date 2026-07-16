@@ -1,5 +1,6 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -7,6 +8,7 @@ import { salvarEstatisticas } from '@/app/actions/estatisticas';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { JogadorSorteio } from '@/domain/sorteio.types';
+import { compartilharNoWhatsApp, montarMensagemEstatisticas } from '@/lib/mensagens';
 
 interface EstatisticasIniciais {
   [jogadorId: string]: { gols: number; assistencias: number };
@@ -14,6 +16,7 @@ interface EstatisticasIniciais {
 
 interface EstatisticasFormProps {
   sorteioId: string;
+  dataLabel: string;
   jogadores: JogadorSorteio[];
   iniciais: EstatisticasIniciais;
   admin: boolean;
@@ -21,6 +24,7 @@ interface EstatisticasFormProps {
 
 export function EstatisticasForm({
   sorteioId,
+  dataLabel,
   jogadores,
   iniciais,
   admin,
@@ -59,22 +63,32 @@ export function EstatisticasForm({
     toast.success('Estatísticas salvas.');
   }
 
-  if (!admin) {
-    const comEstatistica = jogadores.filter((j) => {
-      const v = valores[j.id];
-      return v && (v.gols > 0 || v.assistencias > 0);
-    });
+  function handleCompartilhar() {
+    compartilharNoWhatsApp(montarMensagemEstatisticas(dataLabel, jogadores, valores));
+  }
 
-    if (comEstatistica.length === 0) return null;
+  const temEstatistica = jogadores.some((j) => {
+    const v = valores[j.id];
+    return v && (v.gols > 0 || v.assistencias > 0);
+  });
+
+  if (!admin) {
+    if (!temEstatistica) return null;
 
     return (
-      <div className="space-y-1 border-t border-border/60 pt-3">
+      <div className="space-y-2 border-t border-border/60 pt-3">
         <p className="text-sm font-medium">Gols e assistências</p>
-        {comEstatistica.map((j) => (
-          <p key={j.id} className="text-sm text-muted-foreground">
-            {j.nome} — {valores[j.id].gols} gol(s), {valores[j.id].assistencias} assistência(s)
-          </p>
-        ))}
+        {jogadores
+          .filter((j) => valores[j.id] && (valores[j.id].gols > 0 || valores[j.id].assistencias > 0))
+          .map((j) => (
+            <p key={j.id} className="text-sm text-muted-foreground">
+              {j.nome} — {valores[j.id].gols} gol(s), {valores[j.id].assistencias} assistência(s)
+            </p>
+          ))}
+        <Button size="sm" variant="outline" onClick={handleCompartilhar} className="gap-2">
+          <MessageCircle className="size-4" />
+          Compartilhar no WhatsApp
+        </Button>
       </div>
     );
   }
@@ -111,9 +125,21 @@ export function EstatisticasForm({
           </div>
         ))}
       </div>
-      <Button size="sm" onClick={handleSalvar} disabled={salvando}>
-        {salvando ? 'Salvando...' : 'Salvar estatísticas'}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" onClick={handleSalvar} disabled={salvando}>
+          {salvando ? 'Salvando...' : 'Salvar estatísticas'}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={handleCompartilhar}
+          disabled={!temEstatistica}
+          className="gap-2"
+        >
+          <MessageCircle className="size-4" />
+          Compartilhar no WhatsApp
+        </Button>
+      </div>
     </div>
   );
 }

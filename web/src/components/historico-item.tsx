@@ -1,11 +1,14 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import { EstatisticasForm } from '@/components/estatisticas-form';
 import { TimeCard } from '@/components/time-card';
+import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ResultadoSorteio } from '@/domain/sorteio.types';
+import { compartilharNoWhatsApp, montarMensagemSorteio } from '@/lib/mensagens';
 import type { SorteioRow } from '@/types/database.types';
 
 interface HistoricoItemProps {
@@ -23,10 +26,12 @@ export function HistoricoItem({ sorteio, estatisticasIniciais, admin }: Historic
     [resultado]
   );
 
+  const dataLabel = new Date(sorteio.created_at).toLocaleDateString('pt-BR');
+
   return (
     <Card className="cursor-pointer" onClick={() => setAberto((v) => !v)}>
       <CardHeader>
-        <CardTitle>{new Date(sorteio.created_at).toLocaleDateString('pt-BR')}</CardTitle>
+        <CardTitle>{dataLabel}</CardTitle>
         <CardDescription>
           Times de {sorteio.tamanho_time} · {resultado.times.length} time(s)
         </CardDescription>
@@ -46,8 +51,19 @@ export function HistoricoItem({ sorteio, estatisticasIniciais, admin }: Historic
             />
           )}
 
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => compartilharNoWhatsApp(montarMensagemSorteio(resultado))}
+            className="w-full gap-2"
+          >
+            <MessageCircle className="size-4" />
+            Compartilhar times no WhatsApp
+          </Button>
+
           <EstatisticasForm
             sorteioId={sorteio.id}
+            dataLabel={dataLabel}
             jogadores={todosJogadores}
             iniciais={estatisticasIniciais}
             admin={admin}

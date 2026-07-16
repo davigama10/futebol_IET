@@ -1,5 +1,6 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -13,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { sortearTimes } from '@/domain/sorteio';
 import type { ResultadoSorteio, TamanhoTime } from '@/domain/sorteio.types';
 import { useJogadores } from '@/hooks/useJogadores';
+import { compartilharNoWhatsApp, montarMensagemSorteio } from '@/lib/mensagens';
 import { normalizarTexto } from '@/lib/texto';
 
 type Fase = 'selecionando' | 'resultado';
@@ -81,6 +83,11 @@ export function SorteioClient() {
     toast.success('Sorteio salvo no histórico.');
   }
 
+  function handleCompartilhar() {
+    if (!resultado) return;
+    compartilharNoWhatsApp(montarMensagemSorteio(resultado));
+  }
+
   if (fase === 'resultado' && resultado) {
     return (
       <div className="mx-auto max-w-2xl space-y-4">
@@ -107,9 +114,19 @@ export function SorteioClient() {
           )}
         </div>
 
-        <Button onClick={handleSalvar} disabled={salvando || salvo} className="w-full">
-          {salvo ? 'Salvo no histórico' : salvando ? 'Salvando...' : 'Salvar no histórico'}
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button onClick={handleSalvar} disabled={salvando || salvo} className="flex-1">
+            {salvo ? 'Salvo no histórico' : salvando ? 'Salvando...' : 'Salvar no histórico'}
+          </Button>
+          <Button
+            onClick={handleCompartilhar}
+            variant="outline"
+            className="flex-1 gap-2"
+          >
+            <MessageCircle className="size-4" />
+            Compartilhar no WhatsApp
+          </Button>
+        </div>
       </div>
     );
   }
