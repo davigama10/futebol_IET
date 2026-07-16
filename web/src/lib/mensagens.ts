@@ -1,18 +1,28 @@
 import type { ResultadoSorteio } from '@/domain/sorteio.types';
 
+// Emojis "astrais" (fora do plano básico Unicode, ex: 🔵🏃🔥) corrompem em
+// alguns clientes ao passar pelo link wa.me. Usamos só emojis/símbolos do
+// plano básico (BMP) — inclusive os números "keycap" (1️⃣, 2️⃣...), que embora
+// pareçam compostos, todos os seus codepoints são BMP.
+const NUMEROS_TIME = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣'];
+
 export function montarMensagemSorteio(resultado: ResultadoSorteio): string {
-  const linhas: string[] = ['⚽ *Sorteio da Pelada*', ''];
+  const linhas: string[] = ['⚽ *Sorteio da Pelada* ⚽', ''];
 
   resultado.times.forEach((time, i) => {
-    linhas.push(`*Time ${i + 1}* (nível ${time.somaNivel})`);
-    time.jogadores.forEach((j) => linhas.push(`- ${j.nome}`));
+    const numero = NUMEROS_TIME[i] ?? `${i + 1}.`;
+    linhas.push(`${numero} *Time ${i + 1}*`);
+    time.jogadores.forEach((j) => linhas.push(`• ${j.nome}`));
     linhas.push('');
   });
 
   if (resultado.avulsos.length > 0) {
-    linhas.push('*Avulsos (decidir em campo)*');
-    resultado.avulsos.forEach((j) => linhas.push(`- ${j.nome}`));
+    linhas.push('⚠️ *Avulsos (decidir em campo)*');
+    resultado.avulsos.forEach((j) => linhas.push(`• ${j.nome}`));
+    linhas.push('');
   }
+
+  linhas.push('Bom jogo! ⚽✨');
 
   return linhas.join('\n').trim();
 }
