@@ -1,15 +1,27 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import { EstatisticasForm } from '@/components/estatisticas-form';
 import { TimeCard } from '@/components/time-card';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { ResultadoSorteio } from '@/domain/sorteio.types';
 import type { SorteioRow } from '@/types/database.types';
 
-export function HistoricoItem({ sorteio }: { sorteio: SorteioRow }) {
+interface HistoricoItemProps {
+  sorteio: SorteioRow;
+  estatisticasIniciais: Record<string, { gols: number; assistencias: number }>;
+  admin: boolean;
+}
+
+export function HistoricoItem({ sorteio, estatisticasIniciais, admin }: HistoricoItemProps) {
   const [aberto, setAberto] = useState(false);
   const resultado = sorteio.resultado as ResultadoSorteio;
+
+  const todosJogadores = useMemo(
+    () => [...resultado.times.flatMap((t) => t.jogadores), ...resultado.avulsos],
+    [resultado]
+  );
 
   return (
     <Card className="cursor-pointer" onClick={() => setAberto((v) => !v)}>
@@ -33,6 +45,13 @@ export function HistoricoItem({ sorteio }: { sorteio: SorteioRow }) {
               titulo="Avulsos"
             />
           )}
+
+          <EstatisticasForm
+            sorteioId={sorteio.id}
+            jogadores={todosJogadores}
+            iniciais={estatisticasIniciais}
+            admin={admin}
+          />
         </div>
       )}
     </Card>

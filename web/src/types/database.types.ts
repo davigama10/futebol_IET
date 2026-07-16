@@ -33,6 +33,16 @@ export type SorteioRow = {
   created_at: string;
 };
 
+export type EstatisticaSorteioRow = {
+  id: string;
+  sorteio_id: string;
+  jogador_id: string;
+  gols: number;
+  assistencias: number;
+  created_at: string;
+  updated_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -52,6 +62,13 @@ export type Database = {
         Row: SorteioRow;
         Insert: Partial<SorteioRow> & Pick<SorteioRow, 'tamanho_time' | 'resultado'>;
         Update: Partial<SorteioRow>;
+        Relationships: [];
+      };
+      estatisticas_sorteio: {
+        Row: EstatisticaSorteioRow;
+        Insert: Partial<EstatisticaSorteioRow> &
+          Pick<EstatisticaSorteioRow, 'sorteio_id' | 'jogador_id'>;
+        Update: Partial<EstatisticaSorteioRow>;
         Relationships: [];
       };
     };
