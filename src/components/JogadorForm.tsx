@@ -5,6 +5,7 @@ import { Button, HelperText, SegmentedButtons, Text, TextInput } from 'react-nat
 import { z } from 'zod';
 
 import type { Posicao } from '../domain/sorteio.types';
+import { NivelSelector } from './NivelSelector';
 
 const jogadorSchema = z.object({
   nome: z.string().trim().min(1, 'Informe o nome do jogador'),
@@ -68,12 +69,9 @@ export function JogadorForm({
         control={control}
         name="nivel"
         render={({ field: { value, onChange } }) => (
-          <SegmentedButtons
-            value={value}
-            onValueChange={onChange}
-            buttons={['1', '2', '3', '4', '5'].map((v) => ({ value: v, label: v }))}
-            style={styles.input}
-          />
+          <View style={styles.input}>
+            <NivelSelector value={Number(value)} onChange={(n) => onChange(String(n))} />
+          </View>
         )}
       />
       {errors.nivel && <HelperText type="error">{errors.nivel.message}</HelperText>}

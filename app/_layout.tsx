@@ -11,6 +11,7 @@ import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { AuthProvider } from '@/src/contexts/AuthContext';
 import { ProfileProvider } from '@/src/contexts/ProfileContext';
+import { paperDarkTheme, paperLightTheme } from '@/src/constants/theme';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -36,7 +37,7 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <ProfileProvider>
-          <PaperProvider>
+          <PaperProvider theme={colorScheme === 'dark' ? paperDarkTheme : paperLightTheme}>
             <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
               <Stack screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="(auth)" />

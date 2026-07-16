@@ -2,7 +2,11 @@
 
 App para gerenciar o sorteio semanal dos times de futebol ("pelada") da igreja: cadastro de jogadores, seleção dos que vão jogar na semana e sorteio balanceado por nível de habilidade e função (atacante/defensor).
 
-## Setup
+> **Este repositório tem dois projetos, mesma base Supabase:**
+> - **Raiz** (este README): app mobile React Native/Expo — distribuição via APK/Expo Go. Mantido no repo, mas não é mais o foco principal.
+> - **`web/`**: app web Next.js hospedado na Vercel (PWA instalável, funciona em Android e iOS sem loja/TestFlight) — ver [`web/README.md`](web/README.md). É a versão recomendada atualmente.
+
+## Setup (app mobile)
 
 ### 1. Instalar dependências
 

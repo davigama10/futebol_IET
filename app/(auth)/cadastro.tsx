@@ -1,4 +1,4 @@
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, Text, TextInput } from 'react-native-paper';
@@ -79,9 +79,9 @@ export default function CadastroScreen() {
         Cadastrar
       </Button>
 
-      <Link href="/(auth)/login" style={styles.link}>
+      <Button mode="text" onPress={() => router.push('/(auth)/login')} style={styles.link}>
         Já tem conta? Entrar
-      </Link>
+      </Button>
     </View>
   );
 }

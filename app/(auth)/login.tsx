@@ -1,4 +1,4 @@
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Button, HelperText, Text, TextInput } from 'react-native-paper';
@@ -27,7 +27,7 @@ export default function LoginScreen() {
   return (
     <View style={styles.container}>
       <Text variant="headlineMedium" style={styles.titulo}>
-        Pelada da Igreja
+        ⚽ Pelada da Igreja
       </Text>
 
       <TextInput
@@ -52,9 +52,9 @@ export default function LoginScreen() {
         Entrar
       </Button>
 
-      <Link href="/(auth)/cadastro" style={styles.link}>
+      <Button mode="text" onPress={() => router.push('/(auth)/cadastro')} style={styles.link}>
         Não tem conta? Cadastre-se
-      </Link>
+      </Button>
     </View>
   );
 }

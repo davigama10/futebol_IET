@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Text } from 'react-native-paper';
+import { Avatar, Button, Card, Text } from 'react-native-paper';
 
 import { isAdmin, isMasterAdmin } from '@/src/constants/roles';
 import { useAuth } from '@/src/contexts/AuthContext';
@@ -23,22 +23,38 @@ export default function HomeScreen() {
 
       <View style={styles.acoes}>
         <Card style={styles.card} onPress={() => router.push('/(app)/jogadores')}>
-          <Card.Title title="Jogadores" subtitle="Ver jogadores cadastrados" />
+          <Card.Title
+            title="Jogadores"
+            subtitle="Ver jogadores cadastrados"
+            left={(props) => <Avatar.Icon {...props} icon="account-group" />}
+          />
         </Card>
 
         {admin && (
           <Card style={styles.card} onPress={() => router.push('/(app)/sorteio')}>
-            <Card.Title title="Sorteio da semana" subtitle="Selecionar e sortear times" />
+            <Card.Title
+              title="Sorteio da semana"
+              subtitle="Selecionar e sortear times"
+              left={(props) => <Avatar.Icon {...props} icon="soccer" />}
+            />
           </Card>
         )}
 
         <Card style={styles.card} onPress={() => router.push('/(app)/historico')}>
-          <Card.Title title="Histórico" subtitle="Sorteios anteriores" />
+          <Card.Title
+            title="Histórico"
+            subtitle="Sorteios anteriores"
+            left={(props) => <Avatar.Icon {...props} icon="history" />}
+          />
         </Card>
 
         {masterAdmin && (
           <Card style={styles.card} onPress={() => router.push('/(app)/usuarios')}>
-            <Card.Title title="Usuários" subtitle="Gerenciar permissões" />
+            <Card.Title
+              title="Usuários"
+              subtitle="Gerenciar permissões"
+              left={(props) => <Avatar.Icon {...props} icon="shield-account" />}
+            />
           </Card>
         )}
       </View>

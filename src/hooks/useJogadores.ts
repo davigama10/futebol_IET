@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { Posicao } from '../domain/sorteio.types';
 import { supabase } from '../lib/supabase';
@@ -10,31 +10,27 @@ export interface JogadorInput {
   posicao: Posicao;
 }
 
+const JOGADORES_KEY = ['jogadores'];
+
+async function fetchJogadores(): Promise<JogadorRow[]> {
+  const { data, error } = await supabase
+    .from('jogadores')
+    .select('*')
+    .eq('ativo', true)
+    .order('nome', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
 export function useJogadores() {
-  const [jogadores, setJogadores] = useState<JogadorRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const carregar = useCallback(async () => {
-    setLoading(true);
-    const { data, error: err } = await supabase
-      .from('jogadores')
-      .select('*')
-      .eq('ativo', true)
-      .order('nome', { ascending: true });
-
-    if (err) {
-      setError(err.message);
-    } else {
-      setError(null);
-      setJogadores(data ?? []);
-    }
-    setLoading(false);
-  }, []);
-
-  useEffect(() => {
-    carregar();
-  }, [carregar]);
+  const queryClient = useQueryClient();
+  const {
+    data: jogadores = [],
+    isLoading: loading,
+    error,
+    refetch: recarregar,
+  } = useQuery({ queryKey: JOGADORES_KEY, queryFn: fetchJogadores });
 
   async function criar(input: JogadorInput) {
     const { data: userData } = await supabase.auth.getUser();
@@ -45,7 +41,7 @@ export function useJogadores() {
       criado_por: userData.user?.id,
     });
     if (err) return { error: err.message };
-    await carregar();
+    await queryClient.invalidateQueries({ queryKey: JOGADORES_KEY });
     return { error: null };
   }
 
@@ -55,16 +51,24 @@ export function useJogadores() {
       .update({ nome: input.nome, nivel: input.nivel, posicao: input.posicao })
       .eq('id', id);
     if (err) return { error: err.message };
-    await carregar();
+    await queryClient.invalidateQueries({ queryKey: JOGADORES_KEY });
     return { error: null };
   }
 
   async function excluir(id: string) {
     const { error: err } = await supabase.from('jogadores').delete().eq('id', id);
     if (err) return { error: err.message };
-    await carregar();
+    await queryClient.invalidateQueries({ queryKey: JOGADORES_KEY });
     return { error: null };
   }
 
-  return { jogadores, loading, error, recarregar: carregar, criar, atualizar, excluir };
+  return {
+    jogadores,
+    loading,
+    error: error ? (error as Error).message : null,
+    recarregar,
+    criar,
+    atualizar,
+    excluir,
+  };
 }

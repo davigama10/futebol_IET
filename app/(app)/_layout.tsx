@@ -60,7 +60,7 @@ export default function AppLayout() {
             href: admin ? undefined : null,
             title: 'Sorteio',
             tabBarIcon: ({ color, size }) => (
-              <MaterialIcons name="shuffle" size={size} color={color} />
+              <MaterialIcons name="sports-soccer" size={size} color={color} />
             ),
           }}
         />
