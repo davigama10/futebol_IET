@@ -1,4 +1,4 @@
-import { History, ShieldCheck, Shuffle, Users } from 'lucide-react';
+import { History, ShieldCheck, Shuffle, Trophy, Users } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { DashboardCard } from '@/components/dashboard-card';
@@ -38,6 +38,13 @@ export default async function InicioPage() {
             description="Selecionar e sortear times"
           />
         )}
+
+        <DashboardCard
+          href="/torneios"
+          icon={Trophy}
+          title="Torneios"
+          description="Criar e acompanhar torneios"
+        />
 
         <DashboardCard
           href="/historico"

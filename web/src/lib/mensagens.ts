@@ -1,4 +1,6 @@
 import type { ResultadoSorteio } from '@/domain/sorteio.types';
+import type { RankingEntry } from '@/lib/torneio-stats';
+import type { TorneioRow, TorneioTimeRow } from '@/types/database.types';
 
 // Emojis "astrais" (fora do plano básico Unicode, ex: 🔵🏃🔥) corrompem em
 // alguns clientes ao passar pelo link wa.me. Usamos só emojis/símbolos do
@@ -56,6 +58,42 @@ export function montarMensagemEstatisticas(
 
   if (comAssist.length === 0) linhas.push('Nenhuma assistência registrada.');
   else comAssist.forEach((j) => linhas.push(`- ${j.nome}: ${estatisticas[j.id].assistencias}`));
+
+  return linhas.join('\n').trim();
+}
+
+export function montarMensagemTorneio(
+  torneio: TorneioRow,
+  classificacao: TorneioTimeRow[],
+  artilharia: RankingEntry[],
+  assistencias: RankingEntry[]
+): string {
+  const dataFormatada = new Date(`${torneio.data}T00:00:00`).toLocaleDateString('pt-BR');
+  const nomeTorneio = torneio.nome || `Torneio de ${dataFormatada}`;
+  const campeao = classificacao[0];
+
+  const linhas: string[] = [`⚽ *${nomeTorneio}* ⚽`, dataFormatada, ''];
+
+  if (campeao) {
+    linhas.push(`⭐ *Campeão: Time ${campeao.indice}*`, '');
+  }
+
+  linhas.push('*Classificação*');
+  classificacao.forEach((t, i) => {
+    const saldo = t.gols_pro - t.gols_contra;
+    const saldoTexto = saldo > 0 ? `+${saldo}` : `${saldo}`;
+    linhas.push(`${i + 1}º Time ${t.indice} — ${t.pontos} pts (${saldoTexto})`);
+  });
+  linhas.push('');
+
+  linhas.push('*Artilharia*');
+  if (artilharia.length === 0) linhas.push('Ninguém marcou.');
+  else artilharia.forEach((a) => linhas.push(`${a.nome} — ${a.total} gol(s)`));
+  linhas.push('');
+
+  linhas.push('*Assistências*');
+  if (assistencias.length === 0) linhas.push('Nenhuma assistência registrada.');
+  else assistencias.forEach((a) => linhas.push(`${a.nome} — ${a.total} assistência(s)`));
 
   return linhas.join('\n').trim();
 }
