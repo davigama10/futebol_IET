@@ -17,9 +17,9 @@ const jogadorSchema = z.object({
   nivel: z.string().refine(
     (v) => {
       const n = Number(v);
-      return Number.isInteger(n) && n >= 1 && n <= 5;
+      return Number.isFinite(n) && n >= 1 && n <= 5 && Number.isInteger(n * 2);
     },
-    { message: 'Nível deve ser um número inteiro entre 1 e 5' }
+    { message: 'Nível deve ser entre 1 e 5, em incrementos de meia estrela' }
   ),
   posicao: z.enum(['atacante', 'defensor']),
 });

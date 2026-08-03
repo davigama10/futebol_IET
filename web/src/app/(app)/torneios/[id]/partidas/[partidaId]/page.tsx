@@ -2,7 +2,9 @@ import { Goal, Handshake } from 'lucide-react';
 import { notFound } from 'next/navigation';
 
 import { EncerrarPartidaButton } from '@/components/encerrar-partida-button';
+import { ReabrirPartidaButton } from '@/components/reabrir-partida-button';
 import { RegistrarGolDialog } from '@/components/registrar-gol-dialog';
+import { RemoverGolButton } from '@/components/remover-gol-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { isAdmin } from '@/constants/roles';
@@ -94,6 +96,7 @@ export default async function PartidaPage({
                       </span>
                     )}
                   </span>
+                  {admin && emAndamento && <RemoverGolButton eventoId={e.id} />}
                 </CardContent>
               </Card>
             );
@@ -102,6 +105,7 @@ export default async function PartidaPage({
       </div>
 
       {admin && emAndamento && <EncerrarPartidaButton partidaId={partidaId} />}
+      {admin && !emAndamento && <ReabrirPartidaButton partidaId={partidaId} />}
     </div>
   );
 }
