@@ -1,5 +1,6 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { sortearTimes } from '@/domain/sorteio';
 import type { ResultadoSorteio, TamanhoTime } from '@/domain/sorteio.types';
 import { useJogadores } from '@/hooks/useJogadores';
+import { compartilharNoWhatsApp, montarMensagemSorteio } from '@/lib/mensagens';
 import { normalizarTexto } from '@/lib/texto';
 import type { FormatoTorneioRow } from '@/types/database.types';
 
@@ -105,6 +107,11 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
     setSalvando(false);
 
     if (result?.error) toast.error(result.error);
+  }
+
+  function handleCompartilhar() {
+    if (!resultado) return;
+    compartilharNoWhatsApp(montarMensagemSorteio(resultado));
   }
 
   if (fase === 'dados') {
@@ -226,6 +233,11 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
             {salvando ? 'Salvando...' : 'Salvar torneio'}
           </Button>
         </div>
+
+        <Button variant="outline" onClick={handleCompartilhar} className="w-full gap-2">
+          <MessageCircle className="size-4" />
+          Compartilhar times no WhatsApp
+        </Button>
       </div>
     );
   }

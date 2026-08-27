@@ -8,7 +8,8 @@ import { RankingLista } from '@/components/ranking-lista';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { compartilharNoWhatsApp, montarMensagemTorneio } from '@/lib/mensagens';
+import type { JogadorSorteio } from '@/domain/sorteio.types';
+import { compartilharNoWhatsApp, montarMensagemSorteio, montarMensagemTorneio } from '@/lib/mensagens';
 import { cn } from '@/lib/utils';
 import type { RankingEntry } from '@/lib/torneio-stats';
 import type { PartidaRow, TorneioRow, TorneioTimeRow } from '@/types/database.types';
@@ -47,9 +48,22 @@ export function TorneioTabs({ torneio, times, partidas, artilharia, assistencias
     [times]
   );
 
+  function handleCompartilharTimes() {
+    const timesOrdenados = [...times].sort((a, b) => a.indice - b.indice);
+    compartilharNoWhatsApp(
+      montarMensagemSorteio({
+        times: timesOrdenados.map((t) => ({
+          jogadores: t.jogadores as JogadorSorteio[],
+          somaNivel: t.soma_nivel,
+        })),
+        avulsos: [],
+      })
+    );
+  }
+
   return (
     <div className="space-y-4">
-      {torneio.status === 'finalizado' && (
+      {torneio.status === 'finalizado' ? (
         <Button
           variant="outline"
           className="w-full gap-2"
@@ -61,6 +75,11 @@ export function TorneioTabs({ torneio, times, partidas, artilharia, assistencias
         >
           <MessageCircle className="size-4" />
           Compartilhar resultado no WhatsApp
+        </Button>
+      ) : (
+        <Button variant="outline" className="w-full gap-2" onClick={handleCompartilharTimes}>
+          <MessageCircle className="size-4" />
+          Compartilhar times no WhatsApp
         </Button>
       )}
 
