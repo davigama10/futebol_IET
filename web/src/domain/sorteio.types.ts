@@ -1,4 +1,4 @@
-export type Posicao = 'atacante' | 'defensor';
+export type Posicao = 'atacante' | 'meio_campo' | 'defensor' | 'goleiro';
 
 export interface JogadorSorteio {
   id: string;

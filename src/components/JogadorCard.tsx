@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { Card, Chip, Text } from 'react-native-paper';
 
+import { ROTULO_POSICAO } from '../domain/sorteio.types';
 import type { JogadorRow } from '../types/database.types';
 
 interface JogadorCardProps {
@@ -16,7 +17,7 @@ export function JogadorCard({ jogador, onPress, selecionado }: JogadorCardProps)
         <View>
           <Text variant="titleMedium">{jogador.nome}</Text>
           <Text variant="bodySmall" style={styles.subtitulo}>
-            Nível {jogador.nivel} · {jogador.posicao === 'atacante' ? 'Atacante' : 'Defensor'}
+            Nível {jogador.nivel} · {ROTULO_POSICAO[jogador.posicao]}
           </Text>
         </View>
         {selecionado !== undefined && (

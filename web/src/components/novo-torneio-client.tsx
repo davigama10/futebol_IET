@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Shuffle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -13,17 +13,24 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { sortearTimes } from '@/domain/sorteio';
+import { ehGoleiro } from '@/domain/posicoes';
+import { contarDuplasRepetidas, sortearTimes } from '@/domain/sorteio';
 import type { ResultadoSorteio, TamanhoTime } from '@/domain/sorteio.types';
 import { useJogadores } from '@/hooks/useJogadores';
 import { compartilharNoWhatsApp, montarMensagemSorteio } from '@/lib/mensagens';
 import { normalizarTexto } from '@/lib/texto';
-import type { FormatoTorneioRow } from '@/types/database.types';
+import type { FormatoTorneioRow, JogadorRow } from '@/types/database.types';
 
-type Fase = 'dados' | 'jogadores' | 'resultado';
+type Fase = 'dados' | 'goleiros' | 'jogadores' | 'resultado';
 
-export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] }) {
+interface NovoTorneioClientProps {
+  formatos: FormatoTorneioRow[];
+  timesAnteriores: string[][];
+}
+
+export function NovoTorneioClient({ formatos, timesAnteriores }: NovoTorneioClientProps) {
   const { jogadores, loading } = useJogadores();
+  const [goleirosSelecionados, setGoleirosSelecionados] = useState<Set<string>>(new Set());
 
   const [fase, setFase] = useState<Fase>('dados');
   const [nome, setNome] = useState('');
@@ -45,17 +52,48 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
 
   const totalNecessario = quantidadeTimes * jogadoresPorTime;
 
-  const jogadoresFiltrados = useMemo(() => {
+  const goleiros = useMemo(() => jogadores.filter(ehGoleiro), [jogadores]);
+
+  // Jogadores de linha entram no sorteio. Goleiros que não foram escolhidos como goleiros do
+  // torneio aparecem num grupo à parte, caso queiram jogar na linha.
+  const { linhaFiltrados, goleirosNaLinhaFiltrados } = useMemo(() => {
     const termo = normalizarTexto(busca);
-    if (!termo) return jogadores;
-    return jogadores.filter((j) => normalizarTexto(j.nome).includes(termo));
-  }, [jogadores, busca]);
+    const filtrados = termo
+      ? jogadores.filter((j) => normalizarTexto(j.nome).includes(termo))
+      : jogadores;
+    return {
+      linhaFiltrados: filtrados.filter((j) => !ehGoleiro(j)),
+      goleirosNaLinhaFiltrados: filtrados.filter(
+        (j) => ehGoleiro(j) && !goleirosSelecionados.has(j.id)
+      ),
+    };
+  }, [jogadores, busca, goleirosSelecionados]);
 
   const todosFiltradosSelecionados =
-    jogadoresFiltrados.length > 0 && jogadoresFiltrados.every((j) => selecionados.has(j.id));
+    linhaFiltrados.length > 0 && linhaFiltrados.every((j) => selecionados.has(j.id));
+
+  // Quem foi escolhido como goleiro do torneio não pode estar também entre os de linha.
+  const selecionadosLinha = useMemo(
+    () => new Set([...selecionados].filter((id) => !goleirosSelecionados.has(id))),
+    [selecionados, goleirosSelecionados]
+  );
+
+  const duplasRepetidas = useMemo(
+    () => (resultado ? contarDuplasRepetidas(resultado.times, timesAnteriores) : 0),
+    [resultado, timesAnteriores]
+  );
 
   function alternarSelecao(id: string) {
     setSelecionados((atual) => {
+      const novo = new Set(atual);
+      if (novo.has(id)) novo.delete(id);
+      else novo.add(id);
+      return novo;
+    });
+  }
+
+  function alternarGoleiro(id: string) {
+    setGoleirosSelecionados((atual) => {
       const novo = new Set(atual);
       if (novo.has(id)) novo.delete(id);
       else novo.add(id);
@@ -67,9 +105,9 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
     setSelecionados((atual) => {
       const novo = new Set(atual);
       if (todosFiltradosSelecionados) {
-        jogadoresFiltrados.forEach((j) => novo.delete(j.id));
+        linhaFiltrados.forEach((j) => novo.delete(j.id));
       } else {
-        jogadoresFiltrados.forEach((j) => novo.add(j.id));
+        linhaFiltrados.forEach((j) => novo.add(j.id));
       }
       return novo;
     });
@@ -80,15 +118,15 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
       toast.error('Escolha um formato de torneio.');
       return;
     }
-    setFase('jogadores');
+    setFase('goleiros');
   }
 
   function handleSortear() {
     const jogadoresSelecionados = jogadores
-      .filter((j) => selecionados.has(j.id))
+      .filter((j) => selecionadosLinha.has(j.id))
       .map((j) => ({ id: j.id, nome: j.nome, nivel: j.nivel, posicao: j.posicao }));
 
-    const novoResultado = sortearTimes(jogadoresSelecionados, jogadoresPorTime);
+    const novoResultado = sortearTimes(jogadoresSelecionados, jogadoresPorTime, { timesAnteriores });
     setResultado(novoResultado);
     setFase('resultado');
   }
@@ -103,6 +141,9 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
       jogadoresPorTime,
       formatoId,
       times: resultado.times,
+      goleiros: goleiros
+        .filter((g) => goleirosSelecionados.has(g.id))
+        .map((g) => ({ id: g.id, nome: g.nome })),
     });
     setSalvando(false);
 
@@ -195,7 +236,44 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
     );
   }
 
+  if (fase === 'goleiros') {
+    return (
+      <div className="mx-auto max-w-2xl space-y-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">Goleiros do torneio</h1>
+          <Button variant="outline" size="sm" onClick={() => setFase('dados')}>
+            Voltar
+          </Button>
+        </div>
+
+        <p className="text-sm text-muted-foreground">
+          Os goleiros escolhidos aqui não entram no sorteio dos times de linha — ficam disponíveis
+          para as partidas e têm as defesas contabilizadas. É opcional.
+        </p>
+
+        <ListaSelecao
+          loading={loading}
+          jogadores={goleiros}
+          selecionados={goleirosSelecionados}
+          onAlternar={alternarGoleiro}
+          vazio="Nenhum jogador cadastrado com a função Goleiro."
+        />
+
+        <div className="sticky bottom-0 border-t bg-background py-3">
+          <p className="mb-2 text-sm text-muted-foreground">
+            {goleirosSelecionados.size} goleiro(s) selecionado(s)
+          </p>
+          <Button onClick={() => setFase('jogadores')} className="w-full">
+            Continuar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   if (fase === 'resultado' && resultado) {
+    const goleirosDoTorneio = goleiros.filter((g) => goleirosSelecionados.has(g.id));
+
     return (
       <div className="mx-auto max-w-2xl space-y-4">
         <div className="flex items-center justify-between">
@@ -204,6 +282,19 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
             Voltar
           </Button>
         </div>
+
+        {timesAnteriores.length > 0 && (
+          <p className="text-sm text-muted-foreground">
+            {duplasRepetidas === 0
+              ? 'Nenhuma dupla repetida do último sorteio.'
+              : `${duplasRepetidas} dupla(s) de companheiros repetida(s) do último sorteio (o mínimo possível mantendo os times equilibrados).`}
+          </p>
+        )}
+
+        <Button variant="outline" onClick={handleSortear} disabled={salvando} className="w-full gap-2">
+          <Shuffle className="size-4" />
+          Sortear de novo
+        </Button>
 
         <div className="space-y-4">
           {resultado.times.map((time, i) => (
@@ -217,6 +308,16 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
               }}
               titulo="Avulsos (não entram no torneio)"
             />
+          )}
+          {goleirosDoTorneio.length > 0 && (
+            <div className="rounded-xl border border-border/60 p-4 text-sm shadow-sm">
+              <p className="mb-2 font-medium">Goleiros</p>
+              <ul className="space-y-1">
+                {goleirosDoTorneio.map((g) => (
+                  <li key={g.id}>{g.nome}</li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
 
@@ -246,14 +347,14 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
     <div className="mx-auto max-w-2xl space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Quem vai jogar o torneio?</h1>
-        <Button variant="outline" size="sm" onClick={() => setFase('dados')}>
+        <Button variant="outline" size="sm" onClick={() => setFase('goleiros')}>
           Voltar
         </Button>
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Selecione exatamente <strong>{totalNecessario}</strong> jogadores ({quantidadeTimes} times ×{' '}
-        {jogadoresPorTime} jogadores).
+        Selecione exatamente <strong>{totalNecessario}</strong> jogadores de linha ({quantidadeTimes}{' '}
+        times × {jogadoresPorTime} jogadores).
       </p>
 
       <Input
@@ -267,43 +368,82 @@ export function NovoTorneioClient({ formatos }: { formatos: FormatoTorneioRow[] 
           variant="ghost"
           size="sm"
           onClick={alternarSelecaoTodos}
-          disabled={jogadoresFiltrados.length === 0}
+          disabled={linhaFiltrados.length === 0}
         >
           {todosFiltradosSelecionados ? 'Desmarcar todos' : 'Marcar todos'}
         </Button>
       </div>
 
-      {loading ? (
+      <ListaSelecao
+        loading={loading}
+        jogadores={linhaFiltrados}
+        selecionados={selecionadosLinha}
+        onAlternar={alternarSelecao}
+        vazio={busca ? 'Nenhum jogador encontrado.' : 'Nenhum jogador cadastrado ainda.'}
+      />
+
+      {!loading && goleirosNaLinhaFiltrados.length > 0 && (
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
-          ))}
-        </div>
-      ) : jogadoresFiltrados.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground">
-          {busca ? 'Nenhum jogador encontrado.' : 'Nenhum jogador cadastrado ainda.'}
-        </p>
-      ) : (
-        <div className="space-y-2">
-          {jogadoresFiltrados.map((j) => (
-            <JogadorCard
-              key={j.id}
-              jogador={j}
-              selecionado={selecionados.has(j.id)}
-              onClick={() => alternarSelecao(j.id)}
-            />
-          ))}
+          <p className="pt-2 text-sm font-medium">Goleiros (se forem jogar na linha)</p>
+          <ListaSelecao
+            loading={false}
+            jogadores={goleirosNaLinhaFiltrados}
+            selecionados={selecionadosLinha}
+            onAlternar={alternarSelecao}
+            vazio=""
+          />
         </div>
       )}
 
       <div className="sticky bottom-0 border-t bg-background py-3">
         <p className="mb-2 text-sm text-muted-foreground">
-          {selecionados.size} de {totalNecessario} jogador(es) selecionado(s)
+          {selecionadosLinha.size} de {totalNecessario} jogador(es) selecionado(s)
         </p>
-        <Button onClick={handleSortear} disabled={selecionados.size !== totalNecessario} className="w-full">
+        <Button
+          onClick={handleSortear}
+          disabled={selecionadosLinha.size !== totalNecessario}
+          className="w-full"
+        >
           Sortear times
         </Button>
       </div>
+    </div>
+  );
+}
+
+interface ListaSelecaoProps {
+  loading: boolean;
+  jogadores: JogadorRow[];
+  selecionados: Set<string>;
+  onAlternar: (id: string) => void;
+  vazio: string;
+}
+
+function ListaSelecao({ loading, jogadores, selecionados, onAlternar, vazio }: ListaSelecaoProps) {
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 w-full" />
+        ))}
+      </div>
+    );
+  }
+
+  if (jogadores.length === 0) {
+    return vazio ? <p className="py-8 text-center text-muted-foreground">{vazio}</p> : null;
+  }
+
+  return (
+    <div className="space-y-2">
+      {jogadores.map((j) => (
+        <JogadorCard
+          key={j.id}
+          jogador={j}
+          selecionado={selecionados.has(j.id)}
+          onClick={() => onAlternar(j.id)}
+        />
+      ))}
     </div>
   );
 }

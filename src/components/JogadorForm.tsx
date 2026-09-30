@@ -16,7 +16,7 @@ const jogadorSchema = z.object({
     },
     { message: 'Nível deve ser um número inteiro entre 1 e 5' }
   ),
-  posicao: z.enum(['atacante', 'defensor']),
+  posicao: z.enum(['atacante', 'meio_campo', 'defensor', 'goleiro']),
 });
 
 export type JogadorFormValues = z.infer<typeof jogadorSchema>;
@@ -88,7 +88,9 @@ export function JogadorForm({
             onValueChange={onChange}
             buttons={[
               { value: 'atacante', label: 'Atacante' },
+              { value: 'meio_campo', label: 'Meio' },
               { value: 'defensor', label: 'Defensor' },
+              { value: 'goleiro', label: 'Goleiro' },
             ]}
             style={styles.input}
           />

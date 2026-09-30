@@ -1,6 +1,6 @@
 # Pelada IET
 
-App para gerenciar o sorteio semanal dos times de futebol ("pelada") da igreja: cadastro de jogadores, seleção dos que vão jogar na semana e sorteio balanceado por nível de habilidade e função (atacante/defensor).
+App para gerenciar o sorteio semanal dos times de futebol ("pelada") da igreja: cadastro de jogadores, seleção dos que vão jogar na semana e sorteio balanceado por nível de habilidade e função (atacante/meio-campo/defensor/goleiro), evitando repetir as duplas do último sorteio.
 
 > **Este repositório tem dois projetos, mesma base Supabase:**
 > - **Raiz** (este README): app mobile React Native/Expo — distribuição via APK/Expo Go. Mantido no repo, mas não é mais o foco principal.
@@ -17,7 +17,7 @@ npm install
 ### 2. Criar o projeto Supabase
 
 1. Crie uma conta e um projeto em [supabase.com](https://supabase.com) (plano gratuito atende esse uso).
-2. No **SQL Editor** do painel do Supabase, rode em ordem os arquivos de `supabase/migrations/` (0001 → 0004).
+2. No **SQL Editor** do painel do Supabase, rode em ordem todos os arquivos de `supabase/migrations/` (0001 → 0010), um de cada vez.
 3. Em **Project Settings → API**, copie a **Project URL** e a **anon public key**.
 4. Copie `.env.example` para `.env` e preencha:
    ```

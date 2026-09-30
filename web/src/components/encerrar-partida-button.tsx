@@ -49,7 +49,8 @@ export function EncerrarPartidaButton({ partidaId }: { partidaId: string }) {
           <AlertDialogTitle>Encerrar partida</AlertDialogTitle>
           <AlertDialogDescription>
             O placar atual será considerado final e a classificação do torneio será atualizada. Não é
-            possível registrar mais gols depois disso.
+            possível registrar mais gols, cartões ou defesas depois disso (a menos que a partida seja
+            reaberta).
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

@@ -1,6 +1,6 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Shuffle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -19,7 +19,7 @@ import { normalizarTexto } from '@/lib/texto';
 
 type Fase = 'selecionando' | 'resultado';
 
-export function SorteioClient() {
+export function SorteioClient({ timesAnteriores }: { timesAnteriores: string[][] }) {
   const { jogadores, loading } = useJogadores();
   const [busca, setBusca] = useState('');
   const [selecionados, setSelecionados] = useState<Set<string>>(new Set());
@@ -64,7 +64,7 @@ export function SorteioClient() {
       .filter((j) => selecionados.has(j.id))
       .map((j) => ({ id: j.id, nome: j.nome, nivel: j.nivel, posicao: j.posicao }));
 
-    setResultado(sortearTimes(jogadoresSelecionados, tamanhoTime));
+    setResultado(sortearTimes(jogadoresSelecionados, tamanhoTime, { timesAnteriores }));
     setSalvo(false);
     setFase('resultado');
   }
@@ -97,6 +97,11 @@ export function SorteioClient() {
             Voltar
           </Button>
         </div>
+
+        <Button variant="outline" onClick={handleSortear} className="w-full gap-2">
+          <Shuffle className="size-4" />
+          Sortear de novo
+        </Button>
 
         <div className="space-y-4">
           {resultado.times.map((time, i) => (

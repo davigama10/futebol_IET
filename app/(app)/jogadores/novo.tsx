@@ -4,13 +4,14 @@ import { HelperText } from 'react-native-paper';
 
 import { JogadorForm } from '@/src/components/JogadorForm';
 import { useJogadores } from '@/src/hooks/useJogadores';
+import type { Posicao } from '@/src/domain/sorteio.types';
 
 export default function NovoJogadorScreen() {
   const { criar } = useJogadores();
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  async function handleSubmit(values: { nome: string; nivel: number; posicao: 'atacante' | 'defensor' }) {
+  async function handleSubmit(values: { nome: string; nivel: number; posicao: Posicao }) {
     setEnviando(true);
     const { error } = await criar(values);
     setEnviando(false);

@@ -85,6 +85,8 @@ export type TorneioTimeRow = {
   gols_pro: number;
   gols_contra: number;
   pontos: number;
+  cartoes_amarelos: number;
+  cartoes_vermelhos: number;
 };
 
 export type PartidaStatus = 'em_andamento' | 'finalizada';
@@ -110,6 +112,34 @@ export type EventoGolRow = {
   assistencia_jogador_id: string | null;
   gol_contra: boolean;
   created_at: string;
+};
+
+export type TipoCartao = 'amarelo' | 'vermelho';
+
+export type EventoCartaoRow = {
+  id: string;
+  partida_id: string;
+  time_id: string;
+  jogador_id: string;
+  tipo: TipoCartao;
+  created_at: string;
+};
+
+export type TorneioGoleiroRow = {
+  id: string;
+  torneio_id: string;
+  jogador_id: string;
+  nome: string;
+  created_at: string;
+};
+
+export type DefesaGoleiroRow = {
+  id: string;
+  partida_id: string;
+  jogador_id: string;
+  defesas: number;
+  created_at: string;
+  updated_at: string;
 };
 
 export type Database = {
@@ -178,6 +208,26 @@ export type Database = {
         Row: EventoGolRow;
         Insert: Partial<EventoGolRow> & Pick<EventoGolRow, 'partida_id' | 'time_id' | 'jogador_id'>;
         Update: Partial<EventoGolRow>;
+        Relationships: [];
+      };
+      eventos_cartao: {
+        Row: EventoCartaoRow;
+        Insert: Partial<EventoCartaoRow> &
+          Pick<EventoCartaoRow, 'partida_id' | 'time_id' | 'jogador_id' | 'tipo'>;
+        Update: Partial<EventoCartaoRow>;
+        Relationships: [];
+      };
+      torneio_goleiros: {
+        Row: TorneioGoleiroRow;
+        Insert: Partial<TorneioGoleiroRow> &
+          Pick<TorneioGoleiroRow, 'torneio_id' | 'jogador_id' | 'nome'>;
+        Update: Partial<TorneioGoleiroRow>;
+        Relationships: [];
+      };
+      defesas_goleiro: {
+        Row: DefesaGoleiroRow;
+        Insert: Partial<DefesaGoleiroRow> & Pick<DefesaGoleiroRow, 'partida_id' | 'jogador_id'>;
+        Update: Partial<DefesaGoleiroRow>;
         Relationships: [];
       };
     };

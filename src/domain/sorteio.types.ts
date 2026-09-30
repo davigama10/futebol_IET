@@ -1,4 +1,11 @@
-export type Posicao = 'atacante' | 'defensor';
+export type Posicao = 'atacante' | 'meio_campo' | 'defensor' | 'goleiro';
+
+export const ROTULO_POSICAO: Record<Posicao, string> = {
+  atacante: 'Atacante',
+  meio_campo: 'Meio-campo',
+  defensor: 'Defensor',
+  goleiro: 'Goleiro',
+};
 
 export interface JogadorSorteio {
   id: string;

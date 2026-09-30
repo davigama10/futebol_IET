@@ -5,6 +5,7 @@ import { ActivityIndicator, Button, HelperText, Text } from 'react-native-paper'
 
 import { JogadorForm } from '@/src/components/JogadorForm';
 import { useJogadores } from '@/src/hooks/useJogadores';
+import type { Posicao } from '@/src/domain/sorteio.types';
 
 export default function EditarJogadorScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,7 +31,7 @@ export default function EditarJogadorScreen() {
     );
   }
 
-  async function handleSubmit(values: { nome: string; nivel: number; posicao: 'atacante' | 'defensor' }) {
+  async function handleSubmit(values: { nome: string; nivel: number; posicao: Posicao }) {
     setEnviando(true);
     const { error } = await atualizar(jogador!.id, values);
     setEnviando(false);

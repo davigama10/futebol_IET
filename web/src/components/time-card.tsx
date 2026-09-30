@@ -5,6 +5,7 @@ import { Goal, Handshake, Shirt } from 'lucide-react';
 import { NumberStepper } from '@/components/number-stepper';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { infoPosicao } from '@/domain/posicoes';
 import type { TimeMontado } from '@/domain/sorteio.types';
 import { cn } from '@/lib/utils';
 
@@ -62,16 +63,13 @@ export function TimeCard({
               onClick={clicavel ? () => onToggleLinha?.(j.id) : undefined}
             >
               <span
-                className={cn(
-                  'size-1.5 shrink-0 rounded-full',
-                  j.posicao === 'atacante' ? 'bg-primary' : 'bg-blue-500'
-                )}
+                className={cn('size-1.5 shrink-0 rounded-full', infoPosicao(j.posicao).corPonto)}
               />
               <span className="flex-1 truncate">{j.nome}</span>
 
               {!mostrarEstatisticas && (
                 <span className="text-muted-foreground">
-                  {j.nivel} · {j.posicao === 'atacante' ? 'Atacante' : 'Defensor'}
+                  {j.nivel} · {infoPosicao(j.posicao).label}
                 </span>
               )}
 

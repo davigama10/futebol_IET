@@ -14,23 +14,31 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import type { JogadorSorteio } from '@/domain/sorteio.types';
-
-interface TimeInfo {
-  id: string;
-  indice: number;
-  jogadores: JogadorSorteio[];
-}
+import {
+  montarGruposOutros,
+  SeletorJogador,
+  type JogadorRef,
+  type TimeDoTorneio,
+} from '@/components/seletor-jogador';
 
 interface RegistrarGolDialogProps {
   partidaId: string;
-  timeMarcador: TimeInfo;
-  timeAdversario: TimeInfo;
+  timeMarcador: TimeDoTorneio;
+  timeAdversario: TimeDoTorneio;
+  /** Todos os times do torneio e os goleiros — alimentam a lista "Outros". */
+  timesTorneio: TimeDoTorneio[];
+  goleiros: JogadorRef[];
 }
 
 type Etapa = 'autor' | 'pergunta-assistencia' | 'assistencia';
 
-export function RegistrarGolDialog({ partidaId, timeMarcador, timeAdversario }: RegistrarGolDialogProps) {
+export function RegistrarGolDialog({
+  partidaId,
+  timeMarcador,
+  timeAdversario,
+  timesTorneio,
+  goleiros,
+}: RegistrarGolDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [golContra, setGolContra] = useState(false);
@@ -86,8 +94,11 @@ export function RegistrarGolDialog({ partidaId, timeMarcador, timeAdversario }: 
     setEtapa('assistencia');
   }
 
-  const jogadoresListados = golContra ? timeAdversario.jogadores : timeMarcador.jogadores;
-  const jogadoresParaAssistencia = timeMarcador.jogadores.filter((j) => j.id !== autorId);
+  // O gol é sempre creditado a `timeMarcador`; a lista só muda quem pode ser o autor. Em gol
+  // contra, o autor é do time adversário. "Outros" cobre quem está completando um dos times.
+  const timeDoAutor = golContra ? timeAdversario : timeMarcador;
+  const outrosAutor = montarGruposOutros(timesTorneio, goleiros, timeDoAutor.id);
+  const outrosAssistencia = montarGruposOutros(timesTorneio, goleiros, timeMarcador.id);
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -114,20 +125,13 @@ export function RegistrarGolDialog({ partidaId, timeMarcador, timeAdversario }: 
               {golContra ? `✓ Gol contra (jogador do Time ${timeAdversario.indice})` : 'Foi gol contra?'}
             </Button>
 
-            <div className="max-h-80 space-y-1 overflow-y-auto">
-              {jogadoresListados.map((j) => (
-                <Button
-                  key={j.id}
-                  type="button"
-                  variant="outline"
-                  disabled={enviando}
-                  onClick={() => handleEscolherAutor(j.id)}
-                  className="w-full justify-start"
-                >
-                  {j.nome}
-                </Button>
-              ))}
-            </div>
+            <SeletorJogador
+              key={golContra ? 'contra' : 'normal'}
+              principais={timeDoAutor.jogadores}
+              outros={outrosAutor}
+              onEscolher={handleEscolherAutor}
+              disabled={enviando}
+            />
           </div>
         )}
 
@@ -143,20 +147,13 @@ export function RegistrarGolDialog({ partidaId, timeMarcador, timeAdversario }: 
         )}
 
         {etapa === 'assistencia' && (
-          <div className="max-h-80 space-y-1 overflow-y-auto">
-            {jogadoresParaAssistencia.map((j) => (
-              <Button
-                key={j.id}
-                type="button"
-                variant="outline"
-                disabled={enviando}
-                onClick={() => enviar(autorId!, j.id, false)}
-                className="w-full justify-start"
-              >
-                {j.nome}
-              </Button>
-            ))}
-          </div>
+          <SeletorJogador
+            principais={timeMarcador.jogadores}
+            outros={outrosAssistencia}
+            excluir={autorId ? [autorId] : []}
+            onEscolher={(id) => enviar(autorId!, id, false)}
+            disabled={enviando}
+          />
         )}
       </DialogContent>
     </Dialog>

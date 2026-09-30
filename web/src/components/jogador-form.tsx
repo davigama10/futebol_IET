@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { POSICOES } from '@/domain/posicoes';
 import type { Posicao } from '@/domain/sorteio.types';
 
 const jogadorSchema = z.object({
@@ -21,7 +22,7 @@ const jogadorSchema = z.object({
     },
     { message: 'Nível deve ser entre 1 e 5, em incrementos de meia estrela' }
   ),
-  posicao: z.enum(['atacante', 'defensor']),
+  posicao: z.enum(['atacante', 'meio_campo', 'defensor', 'goleiro']),
 });
 
 export type JogadorFormValues = z.infer<typeof jogadorSchema>;
@@ -81,14 +82,13 @@ export function JogadorForm({
                   value={[value]}
                   onValueChange={(vals) => vals[0] && onChange(vals[0] as Posicao)}
                   variant="outline"
-                  className="w-full"
+                  className="grid w-full grid-cols-2 sm:grid-cols-4"
                 >
-                  <ToggleGroupItem value="atacante" className="flex-1">
-                    Atacante
-                  </ToggleGroupItem>
-                  <ToggleGroupItem value="defensor" className="flex-1">
-                    Defensor
-                  </ToggleGroupItem>
+                  {POSICOES.map((p) => (
+                    <ToggleGroupItem key={p.valor} value={p.valor}>
+                      {p.label}
+                    </ToggleGroupItem>
+                  ))}
                 </ToggleGroup>
               )}
             />

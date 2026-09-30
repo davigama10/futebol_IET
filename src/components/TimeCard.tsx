@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 
-import type { TimeMontado } from '../domain/sorteio.types';
+import { ROTULO_POSICAO, type TimeMontado } from '../domain/sorteio.types';
 
 interface TimeCardProps {
   time: TimeMontado;
@@ -15,7 +15,7 @@ export function TimeCard({ time, titulo }: TimeCardProps) {
       <Card.Content>
         {time.jogadores.map((j) => (
           <Text key={j.id} variant="bodyMedium" style={styles.linha}>
-            {j.nome} — nível {j.nivel} · {j.posicao === 'atacante' ? 'Atacante' : 'Defensor'}
+            {j.nome} — nível {j.nivel} · {ROTULO_POSICAO[j.posicao]}
           </Text>
         ))}
       </Card.Content>

@@ -2,6 +2,7 @@ import { CheckCircle2 } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { infoPosicao } from '@/domain/posicoes';
 import { cn } from '@/lib/utils';
 import type { JogadorRow } from '@/types/database.types';
 
@@ -12,7 +13,7 @@ interface JogadorCardProps {
 }
 
 export function JogadorCard({ jogador, onClick, selecionado }: JogadorCardProps) {
-  const atacante = jogador.posicao === 'atacante';
+  const posicao = infoPosicao(jogador.posicao);
 
   return (
     <Card
@@ -27,7 +28,7 @@ export function JogadorCard({ jogador, onClick, selecionado }: JogadorCardProps)
         <span
           className={cn(
             'flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-            atacante ? 'bg-primary/10 text-primary' : 'bg-blue-500/10 text-blue-600'
+            posicao.corAvatar
           )}
         >
           {jogador.nome.charAt(0).toUpperCase()}
@@ -36,7 +37,7 @@ export function JogadorCard({ jogador, onClick, selecionado }: JogadorCardProps)
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{jogador.nome}</p>
           <p className="text-sm text-muted-foreground">
-            Nível {jogador.nivel} · {atacante ? 'Atacante' : 'Defensor'}
+            Nível {jogador.nivel} · {posicao.label}
           </p>
         </div>
 

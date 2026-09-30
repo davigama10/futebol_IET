@@ -66,7 +66,8 @@ export function montarMensagemTorneio(
   torneio: TorneioRow,
   classificacao: TorneioTimeRow[],
   artilharia: RankingEntry[],
-  assistencias: RankingEntry[]
+  assistencias: RankingEntry[],
+  defesas: RankingEntry[] = []
 ): string {
   const dataFormatada = new Date(`${torneio.data}T00:00:00`).toLocaleDateString('pt-BR');
   const nomeTorneio = torneio.nome || `Torneio de ${dataFormatada}`;
@@ -94,6 +95,12 @@ export function montarMensagemTorneio(
   linhas.push('*Assistências*');
   if (assistencias.length === 0) linhas.push('Nenhuma assistência registrada.');
   else assistencias.forEach((a) => linhas.push(`${a.nome} — ${a.total} assistência(s)`));
+
+  const comDefesas = defesas.filter((d) => d.total > 0);
+  if (comDefesas.length > 0) {
+    linhas.push('', '*Defesas dos goleiros*');
+    comDefesas.forEach((d) => linhas.push(`${d.nome} — ${d.total} defesa(s)`));
+  }
 
   return linhas.join('\n').trim();
 }
